@@ -13,8 +13,8 @@ from utils import ProgressBar
 sys.path.append("../")
 
 # configurations
-img_folder = "/home/lzx/SRDatasets/DIV2K_train/HR/x4/*"
-lmdb_save_path = "/home/lzx/SRDatasets/DIV2K_train/HR/x4_new.lmdb"
+img_folder = "../../../data/DIV2K/train_LR/*"
+lmdb_save_path = "../../../data/DIV2K/lr_sub_x4_new.lmdb"
 meta_info = {"name": "x4"}
 
 mode = (

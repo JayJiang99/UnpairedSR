@@ -24,7 +24,7 @@ from data.data_sampler import DistIterSampler
 from metrics import IQA
 from models import create_model
 
-
+print(torch.cuda.current_device())
 
 #### options
 parser = argparse.ArgumentParser()
@@ -49,6 +49,7 @@ if not osp.exists(args.output_dir):
 test_files = glob(osp.join(args.input_dir, "*"))
 for inx, path in tqdm(enumerate(test_files)):
     name = path.split("/")[-1].split(".")[0]
+    print(name)
 
     img = cv2.imread(path)[:, :, [2, 1, 0]]
     img = img.transpose(2, 0, 1)[None] / 255
@@ -59,6 +60,11 @@ for inx, path in tqdm(enumerate(test_files)):
 
     sr = outdict["sr"]
     sr_im = util.tensor2img(sr)
+    
+    name = name.replace("\\", "/")
 
     save_path = osp.join(args.output_dir, "{}_x{}.png".format(name, opt["scale"]))
+    # save_path = args.output_dir+"/{}_x{}.png".format(name, opt["scale"])
+    
+    print(save_path)
     cv2.imwrite(save_path, sr_im)

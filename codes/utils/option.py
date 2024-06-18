@@ -55,7 +55,8 @@ def parse(opt_path, root_path=".", is_train=True):
     if not opt.get("path"):
         opt["path"] = {}
     opt["path"]["root"] = osp.abspath(root_path)
-    config_paths = osp.abspath(opt_path).split("/")
+    print(opt_path)
+    config_paths = osp.abspath(opt_path).split("\\")
     config_dir = config_paths[config_paths.index("config") + 1]
     if is_train:
         experiments_root = osp.join(

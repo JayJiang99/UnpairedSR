@@ -21,6 +21,7 @@ from data import create_dataloader, create_dataset
 from metrics import IQA
 from models import create_model
 
+print(torch.cuda.current_device())
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Train keypoints network")
@@ -103,6 +104,8 @@ def setup_dataloaer(opt, logger):
 
 
 def main():
+    print(torch.cuda.current_device())
+
     args = parse_args()
     opt = option.parse(args.opt, args.root_path, is_train=True)
 
@@ -124,7 +127,7 @@ def main():
         util.mkdirs(
             (path for key, path in opt["path"].items() if not key == "experiments_root")
         )
-        os.system("rm ./log")
+        os.system("del ./log")
         os.symlink(os.path.join(opt["path"]["experiments_root"], ".."), "./log")
 
     if opt["dist"]:
@@ -233,6 +236,8 @@ def main_worker(gpu, ngpus_per_node, opt, args):
     logger.info(
         "Start training from epoch: {:d}, iter: {:d}".format(start_epoch, current_step)
     )
+    # print(torch.cuda.current_device())
+
     data_time, iter_time = time.time(), time.time()
     avg_data_time = avg_iter_time = 0
     count = 0
@@ -243,7 +248,8 @@ def main_worker(gpu, ngpus_per_node, opt, args):
             count += 1
             if current_step > total_iters:
                 break
-
+            # print('in training')
+            # print(current_step)
             data_time = time.time() - data_time
             avg_data_time = (avg_data_time * (count - 1) + data_time) / count
 

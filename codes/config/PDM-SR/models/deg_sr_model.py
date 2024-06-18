@@ -145,7 +145,7 @@ class DegSRModel(BaseModel):
             )
             loss_dict["noise_mean"] = noise_mean.item()
             loss_G += self.loss_weights["noise_mean"] * noise_mean
-
+        # print(self.optimizers) 
         self.set_optimizer(names=["netDeg"], operation="zero_grad")
         loss_G.backward()
         self.clip_grad_norm(["netDeg"], self.max_grad_norm)
