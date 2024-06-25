@@ -68,6 +68,10 @@ class L1Loss(nn.Module):
         super().__init__()
 
     def forward(self, res, ref):
+        if res.size(1) == 3:
+            res = res[:,1,:,:].unsqueeze(1)
+        if ref.size(1) == 3:
+            ref = ref[:,1,:,:].unsqueeze(1)
         return F.l1_loss(res, ref)
 
 

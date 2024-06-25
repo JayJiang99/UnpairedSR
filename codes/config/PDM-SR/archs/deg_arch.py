@@ -98,9 +98,12 @@ class KernelModel(nn.Module):
         kernel = self.deg_kernel(inp).view(B, 1, ksize**2, *inp.shape[2:])
 
         x = x.view(B*C, 1, H, W)
+        print(x.shape)
+        print(kernel.shape)
         x = F.unfold(
             self.pad(x), kernel_size=ksize, stride=self.scale, padding=0
         ).view(B, C, ksize**2, h, w)
+        print(x.shape)
 
         x = torch.mul(x, kernel).sum(2).view(B, C, h, w)
         kernel = kernel.view(B, ksize, ksize, *inp.shape[2:]).squeeze()

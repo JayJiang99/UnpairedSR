@@ -96,8 +96,11 @@ class OCTDegSRModel(BaseModel):
         (
             self.fake_real_lr,
             self.predicted_kernel,
-            self.predicted_noise,
+            # self.predicted_noise,
          ) = self.netDeg(self.syn_hr)
+        if self.fake_real_lr.size(1) == 1:
+            # repeat it to be 3 channel for the sr model
+            self.fake_real_lr = self.fake_real_lr.repeat(1,3,1,1)
         # use netSR to get the SR image from the fake lr
         if self.losses.get("sr_pix_trans"):
             self.fake_real_lr_quant = self.quant(self.fake_real_lr)
@@ -109,8 +112,11 @@ class OCTDegSRModel(BaseModel):
             (
                 self.fake_real_lr,
                 self.predicted_kernel,
-                self.predicted_noise,
+                # self.predicted_noise,
             ) = self.netDeg(self.syn_hr)
+        if self.fake_real_lr.size(1) == 1:
+            # repeat it to be 3 channel for the sr model
+            self.fake_real_lr = self.fake_real_lr.repeat(1,3,1,1)
 
         self.fake_real_lr_quant = self.quant(self.fake_real_lr)
         self.syn_sr = self.netSR(self.fake_real_lr_quant.detach())
@@ -144,15 +150,15 @@ class OCTDegSRModel(BaseModel):
             loss_dict["sr_pix_trans"] = sr_pix.item()
             loss_G += self.loss_weights["sr_pix_trans"] * sr_pix
         
-        if self.losses.get("noise_mean"):
-            # add the mean of noise to make it close to zero: 
-            # TODO: in OCT the noise mean might not be zero
-            noise = self.predicted_noise
-            noise_mean = (
-                self.losses["noise_mean"](noise, torch.zeros_like(noise))
-            )
-            loss_dict["noise_mean"] = noise_mean.item()
-            loss_G += self.loss_weights["noise_mean"] * noise_mean
+        # if self.losses.get("noise_mean"):
+        #     # add the mean of noise to make it close to zero: 
+        #     # TODO: in OCT the noise mean might not be zero
+        #     noise = self.predicted_noise
+        #     noise_mean = (
+        #         self.losses["noise_mean"](noise, torch.zeros_like(noise))
+        #     )
+        #     loss_dict["noise_mean"] = noise_mean.item()
+        #     loss_G += self.loss_weights["noise_mean"] * noise_mean
         # Optimize the netDeg TODO:
         self.set_optimizer(names=["netDeg"], operation="zero_grad")
         loss_G.backward()
@@ -253,8 +259,14 @@ class OCTDegSRModel(BaseModel):
     
     def calculate_gan_loss_D(self, netD, criterion, real, fake):
 
-        d_pred_fake = netD(fake.detach())
-        d_pred_real = netD(real)
+        if fake.size(1) == 3:
+            d_pred_fake = netD(fake[:,1,:,:].unsqueeze(1).detach())
+        else:
+            d_pred_fake = netD(fake.detach())
+        if real.size(1) == 3:
+            d_pred_real = netD(real[:,1,:,:].unsqueeze(1))    
+        else:
+            d_pred_real = netD(real)
 
         loss_real = criterion(d_pred_real, True, is_disc=True)
         loss_fake = criterion(d_pred_fake, False, is_disc=True)
@@ -263,7 +275,9 @@ class OCTDegSRModel(BaseModel):
 
     def calculate_gan_loss_G(self, netD, criterion, real, fake):
 
-        d_pred_fake = netD(fake)
+        # if fake.size(1) == 3:
+        #     fake = fake.mean(dim=1, keepdim=True)
+        d_pred_fake = netD(fake[:,1,:,:].unsqueeze(1))
         loss_real = criterion(d_pred_fake, True, is_disc=False)
 
         return loss_real

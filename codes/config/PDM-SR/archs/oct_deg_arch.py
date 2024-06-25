@@ -56,6 +56,7 @@ class KernelModel(nn.Module):
             in_nc = nc
 
         deg_kernel = [
+            # TODO: check if this way to generate zk is proper
             nn.Conv2d(in_nc, nf, head_k, 1, head_k//2),
             nn.BatchNorm2d(nf), nn.ReLU(True),
             *[
@@ -63,6 +64,7 @@ class KernelModel(nn.Module):
                 for _ in range(nb)
                 ],
             nn.Conv2d(nf, ksize ** 2, 1, 1, 0),
+            # TODO: check whether it should be sum to 1 for each kernel not the whole
             nn.Softmax(1)
         ]
         self.deg_kernel = nn.Sequential(*deg_kernel)
@@ -81,7 +83,8 @@ class KernelModel(nn.Module):
 
         if self.opt["nc"] > 0:
             if self.opt["spatial"]:
-                zk = torch.randn(B, self.opt["nc"], H, W).to(x.device)
+                # for each axial, the kernel should be variant. For different axial, the kernel should be invariant.
+                zk = torch.randn(B, self.opt["nc"], h, 1).to(x.device)
             else:
                 zk = torch.randn(B, self.opt["nc"], 1, 1).to(x.device)
                 if self.opt["mix"]:
@@ -96,15 +99,21 @@ class KernelModel(nn.Module):
             inp = zk          
         
         ksize = self.opt["ksize"]
-        kernel = self.deg_kernel(inp).view(B, 1, ksize**2, *inp.shape[2:])
+        kernel = self.deg_kernel(inp)
+        # print(kernel.shape)
+        kernel = kernel.repeat(1, 1, 1, w)
+        kernel = kernel.view(B, 1, ksize**2, h, w)
 
         x = x.view(B*C, 1, H, W)
+        # print(x.shape)
+        # print(kernel.shape)
         x = F.unfold(
             self.pad(x), kernel_size=ksize, stride=self.scale, padding=0
         ).view(B, C, ksize**2, h, w)
+        # print(x.shape)
 
         x = torch.mul(x, kernel).sum(2).view(B, C, h, w)
-        kernel = kernel.view(B, ksize, ksize, *inp.shape[2:]).squeeze()
+        kernel = kernel.view(B, ksize, ksize, h,w).squeeze()
 
         return x, kernel
 
