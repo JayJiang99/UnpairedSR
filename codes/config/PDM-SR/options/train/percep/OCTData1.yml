@@ -13,7 +13,7 @@ datasets:
     mode: UnpairedOCTDataset
     data_type: lmdb
     color: Gray
-    ratios: [50, 200]
+    ratios: [5, 5]
 
     dataroot_tgt: D:/zhiyi/OCT_SR/OCT_data/Unpaired_dataset/resol_3d8_10.lmdb
     dataroot_src: D:/zhiyi/OCT_SR/OCT_data/Unpaired_dataset/resol_16_40.lmdb
@@ -27,11 +27,11 @@ datasets:
     use_rot: true
 
   val:
-    name: OCT5_15_val
+    name: OCT16_40_val
     mode: SingleOCTDataset
     data_type: lmdb
     color: Gray
-    dataroot: D:/zhiyi/OCT_SR/OCT_data/Unpaired_dataset/resol_5_15_val.lmdb
+    dataroot: D:/zhiyi/OCT_SR/OCT_data/Unpaired_dataset/resol_16_40_crop_val.lmdb
 
 #### network structures
 networks:
@@ -150,7 +150,7 @@ train:
     netD2: ~
     netD1: ~
 
-  niter: 2000
+  niter: 20000
   warmup_iter: -1  # no warm up
 
   schedulers:
@@ -160,9 +160,9 @@ train:
       gamma: 0.5
 
   manual_seed: 0
-  val_freq: !!float 5e3
+  val_freq: !!float 1e3
 
 #### logger
 logger:
   print_freq: 10
-  save_checkpoint_freq: !!float 5e3
+  save_checkpoint_freq: !!float 1e3

@@ -13,9 +13,9 @@ from utils import ProgressBar
 sys.path.append("../")
 
 # configurations
-img_folder = "../../../OCT_data/Unpaired_dataset/resol_5_15_val/*"
-lmdb_save_path = "../../../OCT_data/Unpaired_dataset/resol_5_15_val.lmdb"
-meta_info = {"name": "16_40"}
+img_folder = "../../../OCT_data/Unpaired_dataset/resol_16_40_crop_val/*"
+lmdb_save_path = "../../../OCT_data/Unpaired_dataset/resol_16_40_crop_val.lmdb"
+meta_info = {"name": "16_40_crop_val"}
 
 mode = (
     2  # 1 for reading all the images to memory and then writing to lmdb (more memory);

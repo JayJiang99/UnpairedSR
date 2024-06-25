@@ -105,6 +105,8 @@ class OCTDegSRModel(BaseModel):
         if self.losses.get("sr_pix_trans"):
             self.fake_real_lr_quant = self.quant(self.fake_real_lr)
             self.syn_sr = self.netSR(self.fake_real_lr_quant)
+            if self.syn_sr.size(1) == 3:
+                self.syn_sr = rgb_to_grayscale(self.syn_sr)
     
     def sr_forward(self):
         # Similar to the above deg_forward. WHY TODO:
@@ -120,6 +122,8 @@ class OCTDegSRModel(BaseModel):
 
         self.fake_real_lr_quant = self.quant(self.fake_real_lr)
         self.syn_sr = self.netSR(self.fake_real_lr_quant.detach())
+        if self.syn_sr.size(1) == 3:
+                self.syn_sr = rgb_to_grayscale(self.syn_sr)
     
     def optimize_trans_models(self, step, loss_dict):
 
@@ -277,7 +281,10 @@ class OCTDegSRModel(BaseModel):
 
         # if fake.size(1) == 3:
         #     fake = fake.mean(dim=1, keepdim=True)
-        d_pred_fake = netD(fake[:,1,:,:].unsqueeze(1))
+        if fake.size(1) == 3:
+            d_pred_fake = netD(fake.mean(dim=1, keepdim=True))
+        else:
+            d_pred_fake = netD(fake)
         loss_real = criterion(d_pred_fake, True, is_disc=False)
 
         return loss_real
@@ -290,7 +297,13 @@ class OCTDegSRModel(BaseModel):
         self.set_network_state(["netSR"], "eval")
         with torch.no_grad():
             if crop_size is None:
-                self.fake_tgt = self.netSR(self.src)
+                if self.src.size(1) == 1:
+                    self.fake_tgt = self.netSR(self.src.repeat(1,3,1,1))
+                else:
+                    self.fake_tgt = self.netSR(self.src)
+
+                if self.fake_tgt.size(1) == 3:
+                    self.fake_tgt = rgb_to_grayscale(self.fake_tgt)
             else:
                 self.fake_tgt = self.crop_test(self.src, crop_size)
         self.set_network_state(["netSR"], "train")
@@ -322,6 +335,8 @@ class OCTDegSRModel(BaseModel):
             for ws in w_start:
                 lr_patch = lr[:, :, hs: hs+crop_size, ws: ws+crop_size]
                 sr_patch = self.netSR(lr_patch)
+                if sr_patch.size(1) == 3:
+                    sr_patch = rgb_to_grayscale(sr_patch)
 
                 sr1[:, :, 
                     int(hs*scale):int((hs+crop_size)*scale),
@@ -336,6 +351,10 @@ class OCTDegSRModel(BaseModel):
             for wd in w_end:
                 lr_patch = lr[:, :, hd-crop_size:hd, wd-crop_size:wd]
                 sr_patch = self.netSR(lr_patch)
+                if sr_patch.size(1) == 3:
+                    sr_patch = rgb_to_grayscale(sr_patch)
+
+                
 
                 sr2[:, :, 
                     int((hd-crop_size)*scale):int(hd*scale),

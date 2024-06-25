@@ -362,6 +362,9 @@ def validate(model, dataset, dist_loader, opt, measure, epoch, current_step):
 
         # calculate scores
         crop_size = opt["scale"]
+        if len(sr_img.shape) == 2:
+            sr_img = np.expand_dims(sr_img, axis=2)
+
         cropped_sr_img = sr_img[crop_size:-crop_size, crop_size:-crop_size, :]
         if "tgt" in val_data.keys():
             gt_img = util.tensor2img(val_data["tgt"])
