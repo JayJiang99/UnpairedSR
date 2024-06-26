@@ -65,6 +65,9 @@ class SingleOCTDataset(data.Dataset):
             # randomly crop
             rnd_h = random.randint(0, max(0, H - cropped_size))
             rnd_w = random.randint(0, max(0, W - cropped_size))
+            # fixed crop to guarantee that the kernel is the same for all data
+            rnd_h = int(H/2 - cropped_size)
+            # rnd_w = int(W/2 - cropped_size)
             img = img[rnd_h : rnd_h + cropped_size, rnd_w : rnd_w + cropped_size]
             # augmentation - flip, rotate
             img = util.augment(

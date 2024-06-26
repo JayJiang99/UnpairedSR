@@ -13,7 +13,7 @@ datasets:
     mode: UnpairedOCTDataset
     data_type: lmdb
     color: Gray
-    ratios: [5, 5]
+    ratios: [200, 200]
 
     dataroot_tgt: D:/zhiyi/OCT_SR/OCT_data/Unpaired_dataset/resol_3d8_10.lmdb
     dataroot_src: D:/zhiyi/OCT_SR/OCT_data/Unpaired_dataset/resol_16_40.lmdb
@@ -57,7 +57,7 @@ networks:
         head_k: 3
         body_k: 3
         dim: 1
-        zero_init: false
+        zero_init: true
     pretrain: 
       path: ~
       strict_load: true
@@ -150,7 +150,7 @@ train:
     netD2: ~
     netD1: ~
 
-  niter: 20000
+  niter: 200000
   warmup_iter: -1  # no warm up
 
   schedulers:
@@ -160,9 +160,9 @@ train:
       gamma: 0.5
 
   manual_seed: 0
-  val_freq: !!float 1e3
+  val_freq: !!float 5e3
 
 #### logger
 logger:
-  print_freq: 10
-  save_checkpoint_freq: !!float 1e3
+  print_freq: 100
+  save_checkpoint_freq: !!float 5e3
